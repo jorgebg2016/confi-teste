@@ -1,0 +1,10 @@
+/vendor/
+.env
+/var/
+.idea/
+.vscode/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+composer.phar
