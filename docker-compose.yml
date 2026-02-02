@@ -1,68 +1,91 @@
 version: "3.8"
 
 services:
+  # =============================================================================
+  # BANCO DE DADOS MYSQL
+  # Escolha: MySQL 8.0 - versão estável com suporte a JSON, CTEs e window functions
+  # =============================================================================
   mysql:
     image: mysql:8.0
     container_name: confi_mysql
     environment:
       MYSQL_ROOT_PASSWORD: root_password
-      MYSQL_DATABASE: confi_teste_db
-      MYSQL_USER: confi_user
+      MYSQL_DATABASE: confi_teste_db # Cria o banco automaticamente no startup
+      MYSQL_USER: confi_user # Usuário dedicado para a aplicação
       MYSQL_PASSWORD: confi_password
     ports:
-      - "3307:3306"
+      - "3307:3306" # Porta 3307 externa para evitar conflito com MySQL local
     volumes:
-      - mysql_data:/var/lib/mysql
+      - mysql_data:/var/lib/mysql # Volume nomeado para persistência dos dados
     healthcheck:
       test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
       timeout: 20s
-      retries: 10
+      retries: 10 # Aguarda MySQL estar pronto antes de iniciar backend
     networks:
       - confi_network
 
+  # =============================================================================
+  # BACKEND PHP
+  # Escolha: PHP 8.2-cli - versão leve sem Apache, usando built-in server
+  # Hot-reload: PHP é interpretado, alterações refletem automaticamente
+  # =============================================================================
   backend:
     build: ./backend
     container_name: confi_backend
     ports:
-      - "8088:8000"
+      - "8088:8000" # Porta 8088 externa para evitar conflitos
     volumes:
-      - ./backend:/var/www/html
-      - backend_vendor:/var/www/html/vendor
+      - ./backend:/var/www/html # Bind mount para hot-reload em desenvolvimento
+      - backend_vendor:/var/www/html/vendor # Volume nomeado para vendor (performance)
     environment:
       APP_ENV: development
       APP_DEBUG: "true"
       DB_DRIVER: pdo_mysql
-      DB_HOST: mysql
+      DB_HOST: mysql # Nome do serviço Docker (DNS interno)
       DB_PORT: 3306
       DB_NAME: confi_teste_db
       DB_USER: confi_user
       DB_PASSWORD: confi_password
-      DB_CHARSET: utf8mb4
+      DB_CHARSET: utf8mb4 # Suporte completo a Unicode/emojis
     depends_on:
       mysql:
-        condition: service_healthy
+        condition: service_healthy # Aguarda healthcheck do MySQL passar
     networks:
       - confi_network
 
+  # =============================================================================
+  # FRONTEND REACT
+  # Escolha: Node 20 Alpine - imagem leve com LTS
+  # Hot-reload: Vite HMR habilitado por padrão
+  # =============================================================================
   frontend:
     build:
       context: ./frontend
     container_name: confi_frontend
     ports:
-      - "5174:5173"
+      - "5174:5173" # Porta 5174 externa para evitar conflitos
     volumes:
-      - ./frontend:/app
-      - frontend_node_modules:/app/node_modules
+      - ./frontend:/app # Bind mount para hot-reload (HMR)
+      - frontend_node_modules:/app/node_modules # Volume nomeado para node_modules (performance)
     environment:
-      VITE_API_URL: http://localhost:8088/api
+      VITE_API_URL: http://localhost:8088/api # URL da API acessível pelo browser
     networks:
       - confi_network
 
+# =============================================================================
+# VOLUMES NOMEADOS
+# Estratégia: Volumes nomeados para dependências (vendor/node_modules) melhoram
+# performance evitando sync de milhares de arquivos entre host e container
+# =============================================================================
 volumes:
-  mysql_data:
-  backend_vendor:
-  frontend_node_modules:
+  mysql_data: # Persistência do banco de dados
+  backend_vendor: # Dependências PHP (composer)
+  frontend_node_modules: # Dependências Node (npm)
 
+# =============================================================================
+# REDE
+# Escolha: Bridge network para comunicação entre containers via DNS interno
+# =============================================================================
 networks:
   confi_network:
     driver: bridge
