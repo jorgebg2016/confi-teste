@@ -2,14 +2,22 @@ import api from "./api";
 import { Task, CreateTaskPayload, UpdateTaskPayload } from "@/types/task";
 import { TaskListResponse, TaskResponse } from "@/types/api";
 
+export interface TaskFilters {
+  search?: string;
+  status?: string;
+}
+
 export const taskService = {
   async getAll(
     page: number = 1,
-    perPage: number = 10,
+    perPage: number = 9,
+    filters: TaskFilters = {},
   ): Promise<TaskListResponse> {
-    const response = await api.get<TaskListResponse>("/tasks", {
-      params: { page, per_page: perPage },
-    });
+    const params: Record<string, string | number> = { page, per_page: perPage };
+    if (filters.search) params.search = filters.search;
+    if (filters.status) params.status = filters.status;
+
+    const response = await api.get<TaskListResponse>("/tasks", { params });
     return response.data;
   },
 

@@ -18,9 +18,17 @@ class TaskController
     {
         $queryParams = $request->getQueryParams();
         $page = max(1, (int) ($queryParams['page'] ?? 1));
-        $perPage = min(100, max(1, (int) ($queryParams['per_page'] ?? 10)));
+        $perPage = min(100, max(1, (int) ($queryParams['per_page'] ?? 9)));
 
-        $result = $this->taskService->findAllPaginated($page, $perPage);
+        $filters = [];
+        if (!empty($queryParams['search'])) {
+            $filters['search'] = trim($queryParams['search']);
+        }
+        if (!empty($queryParams['status'])) {
+            $filters['status'] = $queryParams['status'];
+        }
+
+        $result = $this->taskService->findAllPaginated($page, $perPage, $filters);
 
         return $this->jsonResponse($response, [
             'success' => true,

@@ -18,10 +18,10 @@ class TaskService
         private UpdateTaskValidator $updateValidator
     ) {}
 
-    public function findAllPaginated(int $page = 1, int $perPage = 10): array
+    public function findAllPaginated(int $page = 1, int $perPage = 10, array $filters = []): array
     {
-        $tasks = $this->taskRepository->findPaginated($page, $perPage);
-        $total = $this->taskRepository->count();
+        $tasks = $this->taskRepository->findPaginated($page, $perPage, $filters);
+        $total = $this->taskRepository->count($filters);
         $totalPages = (int) ceil($total / $perPage);
 
         return [

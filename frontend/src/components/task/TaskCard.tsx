@@ -52,9 +52,16 @@ export function TaskCard({ task }: TaskCardProps) {
           </p>
         )}
         <div className="flex items-center justify-between">
-          <span className="text-xs text-muted-foreground">
-            {new Date(task.created_at).toLocaleDateString('pt-BR')}
-          </span>
+          <div className="flex flex-col">
+            <span className="text-xs text-muted-foreground">
+              {new Date(task.created_at).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
+            </span>
+            {task.updated_at !== task.created_at && (
+              <span className="text-xs text-muted-foreground/60">
+                Atualizado: {new Date(task.updated_at).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
+              </span>
+            )}
+          </div>
           <div className="flex gap-1">
             <Button
               variant="ghost"

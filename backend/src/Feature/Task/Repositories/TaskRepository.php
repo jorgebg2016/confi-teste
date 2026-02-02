@@ -23,7 +23,7 @@ class TaskRepository
         return $this->repository->findBy([], ['created_at' => 'DESC']);
     }
 
-    public function findPaginated(int $page = 1, int $perPage = 10): array
+    public function findPaginated(int $page = 1, int $perPage = 10, array $filters = []): array
     {
         $queryBuilder = $this->entityManager->createQueryBuilder();
 
@@ -34,10 +34,12 @@ class TaskRepository
             ->setFirstResult(($page - 1) * $perPage)
             ->setMaxResults($perPage);
 
+        $this->applyFilters($queryBuilder, $filters);
+
         return $queryBuilder->getQuery()->getResult();
     }
 
-    public function count(): int
+    public function count(array $filters = []): int
     {
         $queryBuilder = $this->entityManager->createQueryBuilder();
 
@@ -45,7 +47,24 @@ class TaskRepository
             ->select('COUNT(t.id)')
             ->from(Task::class, 't');
 
+        $this->applyFilters($queryBuilder, $filters);
+
         return (int) $queryBuilder->getQuery()->getSingleScalarResult();
+    }
+
+    private function applyFilters($queryBuilder, array $filters): void
+    {
+        if (!empty($filters['search'])) {
+            $queryBuilder
+                ->andWhere('t.title LIKE :search OR t.description LIKE :search')
+                ->setParameter('search', '%' . $filters['search'] . '%');
+        }
+
+        if (!empty($filters['status'])) {
+            $queryBuilder
+                ->andWhere('t.status = :status')
+                ->setParameter('status', $filters['status']);
+        }
     }
 
     public function find(int $id): ?Task

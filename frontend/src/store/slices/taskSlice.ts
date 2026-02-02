@@ -1,6 +1,6 @@
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import { Task, CreateTaskPayload, UpdateTaskPayload } from '@/types/task';
-import { taskService } from '@/services/taskService';
+import { taskService, TaskFilters } from '@/services/taskService';
 
 interface Pagination {
   page: number;
@@ -13,6 +13,7 @@ interface TaskState {
   tasks: Task[];
   currentTask: Task | null;
   pagination: Pagination;
+  filters: TaskFilters;
   loading: boolean;
   error: string | null;
 }
@@ -22,19 +23,20 @@ const initialState: TaskState = {
   currentTask: null,
   pagination: {
     page: 1,
-    per_page: 10,
+    per_page: 9,
     total: 0,
     total_pages: 0,
   },
+  filters: {},
   loading: false,
   error: null,
 };
 
 export const fetchTasks = createAsyncThunk(
   'task/fetchTasks',
-  async ({ page = 1, perPage = 10 }: { page?: number; perPage?: number } = {}) => {
-    const response = await taskService.getAll(page, perPage);
-    return response;
+  async ({ page = 1, perPage = 9, filters = {} }: { page?: number; perPage?: number; filters?: TaskFilters } = {}) => {
+    const response = await taskService.getAll(page, perPage, filters);
+    return { ...response, filters };
   }
 );
 
@@ -98,6 +100,7 @@ const taskSlice = createSlice({
         state.loading = false;
         state.tasks = action.payload.data;
         state.pagination = action.payload.pagination;
+        state.filters = action.payload.filters;
       })
       .addCase(fetchTasks.rejected, (state, action) => {
         state.loading = false;
