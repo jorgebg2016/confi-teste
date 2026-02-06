@@ -15,8 +15,10 @@ use Dotenv\Dotenv;
 $dotenv = Dotenv::createImmutable(__DIR__);
 $dotenv->load();
 
+$entityPaths = glob(__DIR__ . '/src/Feature/*/Entities', GLOB_ONLYDIR);
+
 $config = ORMSetup::createAttributeMetadataConfiguration(
-    paths: [__DIR__ . '/src/Feature/**/Entities'],
+    paths: $entityPaths,
     isDevMode: true,
 );
 
