@@ -7,11 +7,20 @@ const api = axios.create({
   },
 });
 
+export interface ApiValidationError extends Error {
+  errors?: Record<string, string>;
+}
+
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    const message = error.response?.data?.message || error.message || 'Ocorreu um erro';
-    return Promise.reject(new Error(message));
+    const data = error.response?.data;
+    const message = data?.error || data?.message || error.message || 'Ocorreu um erro';
+    const rejection: ApiValidationError = new Error(message);
+    if (data?.errors) {
+      rejection.errors = data.errors;
+    }
+    return Promise.reject(rejection);
   }
 );
 

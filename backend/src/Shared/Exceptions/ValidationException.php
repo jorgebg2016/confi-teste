@@ -10,7 +10,7 @@ class ValidationException extends Exception
 {
     public function __construct(
         private array $errors,
-        string $message = 'Validation failed'
+        string $message = 'Falha na validação'
     ) {
         parent::__construct($message, 400);
     }

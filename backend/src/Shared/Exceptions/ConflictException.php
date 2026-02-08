@@ -8,7 +8,7 @@ use Exception;
 
 class ConflictException extends Exception
 {
-    public function __construct(string $message = 'Resource already exists')
+    public function __construct(string $message = 'Recurso já existe')
     {
         parent::__construct($message, 409);
     }

@@ -20,6 +20,7 @@ return [
         'user' => $_ENV['DB_USER'] ?? 'root',
         'password' => $_ENV['DB_PASSWORD'] ?? '',
         'charset' => $_ENV['DB_CHARSET'] ?? 'utf8mb4',
+        'path' => $_ENV['DB_PATH'] ?? null,
     ],
     'doctrine' => [
         'dev_mode' => filter_var($_ENV['APP_DEBUG'] ?? false, FILTER_VALIDATE_BOOLEAN),

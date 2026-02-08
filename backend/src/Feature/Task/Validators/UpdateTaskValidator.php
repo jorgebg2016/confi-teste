@@ -13,6 +13,21 @@ class UpdateTaskValidator extends AbstractValidator
     {
         return [
             'title' => v::optional(v::stringType()->length(1, 255)),
+            'description' => v::optional(v::stringType()->length(1, 10000)),
+        ];
+    }
+
+    protected function messages(): array
+    {
+        return [
+            'title' => [
+                'stringType' => 'O título deve ser do tipo texto',
+                'length' => 'O título deve ter entre 1 e 255 caracteres',
+            ],
+            'description' => [
+                'stringType' => 'A descrição deve ser do tipo texto',
+                'length' => 'A descrição deve ter no máximo 10.000 caracteres',
+            ],
         ];
     }
 }

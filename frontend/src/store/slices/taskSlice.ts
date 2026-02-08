@@ -1,6 +1,6 @@
-import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
-import { Task, CreateTaskPayload, UpdateTaskPayload } from '@/types/task';
-import { taskService, TaskFilters } from '@/services/taskService';
+import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
+import { Task, TaskPayload } from "@/types/task";
+import { taskService, TaskFilters } from "@/services/taskService";
 
 interface Pagination {
   page: number;
@@ -9,7 +9,7 @@ interface Pagination {
   total_pages: number;
 }
 
-interface TaskState {
+export interface TaskState {
   tasks: Task[];
   currentTask: Task | null;
   pagination: Pagination;
@@ -17,6 +17,8 @@ interface TaskState {
   loading: boolean;
   error: string | null;
 }
+
+export interface TaskPaginationParams { page?: number; perPage?: number; filters?: TaskFilters };
 
 const initialState: TaskState = {
   tasks: [],
@@ -33,51 +35,69 @@ const initialState: TaskState = {
 };
 
 export const fetchTasks = createAsyncThunk(
-  'task/fetchTasks',
-  async ({ page = 1, perPage = 9, filters = {} }: { page?: number; perPage?: number; filters?: TaskFilters } = {}) => {
+  "task/fetchTasks",
+  async ({
+    page = 1,
+    perPage = 9,
+    filters = {},
+  }: TaskPaginationParams = {}) => {
     const response = await taskService.getAll(page, perPage, filters);
     return { ...response, filters };
-  }
+  },
 );
 
 export const fetchTaskById = createAsyncThunk(
-  'task/fetchTaskById',
+  "task/fetchTaskById",
   async (id: number) => {
     return await taskService.getById(id);
-  }
+  },
 );
 
 export const createTask = createAsyncThunk(
-  'task/createTask',
-  async (data: CreateTaskPayload) => {
+  "task/createTask",
+  async (data: TaskPayload) => {
     return await taskService.create(data);
-  }
+  },
 );
 
 export const updateTask = createAsyncThunk(
-  'task/updateTask',
-  async ({ id, data }: { id: number; data: UpdateTaskPayload }) => {
-    return await taskService.update(id, data);
-  }
+  "task/updateTask",
+  async (
+    { id, data }: { id: number; data: TaskPayload },
+    { rejectWithValue },
+  ) => {
+    try {
+      return await taskService.update(id, data);
+    } catch (error) {
+      const apiError = error as {
+        message: string;
+        errors?: Record<string, string>;
+      };
+      return rejectWithValue({
+        message: apiError.message,
+        errors: apiError.errors,
+      });
+    }
+  },
 );
 
 export const deleteTask = createAsyncThunk(
-  'task/deleteTask',
+  "task/deleteTask",
   async (id: number) => {
     await taskService.delete(id);
     return id;
-  }
+  },
 );
 
 export const toggleTaskStatus = createAsyncThunk(
-  'task/toggleStatus',
+  "task/toggleStatus",
   async (id: number) => {
     return await taskService.toggleStatus(id);
-  }
+  },
 );
 
 const taskSlice = createSlice({
-  name: 'task',
+  name: "task",
   initialState,
   reducers: {
     clearCurrentTask: (state) => {
@@ -104,7 +124,7 @@ const taskSlice = createSlice({
       })
       .addCase(fetchTasks.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.error.message || 'Falha ao buscar tarefas';
+        state.error = action.error.message || "Falha ao buscar tarefas";
       })
       .addCase(fetchTaskById.pending, (state) => {
         state.loading = true;
@@ -116,7 +136,7 @@ const taskSlice = createSlice({
       })
       .addCase(fetchTaskById.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.error.message || 'Falha ao buscar tarefa';
+        state.error = action.error.message || "Falha ao buscar tarefa";
       })
       .addCase(createTask.pending, (state) => {
         state.loading = true;
@@ -129,7 +149,7 @@ const taskSlice = createSlice({
       })
       .addCase(createTask.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.error.message || 'Falha ao criar tarefa';
+        state.error = action.error.message || "Falha ao criar tarefa";
       })
       .addCase(updateTask.pending, (state) => {
         state.loading = true;
@@ -147,7 +167,7 @@ const taskSlice = createSlice({
       })
       .addCase(updateTask.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.error.message || 'Falha ao atualizar tarefa';
+        state.error = action.error.message || "Falha ao atualizar tarefa";
       })
       .addCase(deleteTask.pending, (state) => {
         state.loading = true;
@@ -163,7 +183,7 @@ const taskSlice = createSlice({
       })
       .addCase(deleteTask.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.error.message || 'Falha ao excluir tarefa';
+        state.error = action.error.message || "Falha ao excluir tarefa";
       })
       .addCase(toggleTaskStatus.pending, (state) => {
         state.error = null;
@@ -178,10 +198,12 @@ const taskSlice = createSlice({
         }
       })
       .addCase(toggleTaskStatus.rejected, (state, action) => {
-        state.error = action.error.message || 'Falha ao alterar status da tarefa';
+        state.error =
+          action.error.message || "Falha ao alterar status da tarefa";
       });
   },
 });
 
-export const { clearCurrentTask, clearError, setCurrentTask } = taskSlice.actions;
+export const { clearCurrentTask, clearError, setCurrentTask } =
+  taskSlice.actions;
 export default taskSlice.reducer;

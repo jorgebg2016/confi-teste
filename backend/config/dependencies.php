@@ -53,15 +53,24 @@ return function (ContainerBuilder $containerBuilder, array $settings) {
             $config->setProxyDir($doctrineSettings['proxy_dir']);
             $config->setProxyNamespace('App\Proxies');
 
-            $connection = DriverManager::getConnection([
-                'driver' => $dbSettings['driver'],
-                'host' => $dbSettings['host'],
-                'port' => $dbSettings['port'],
-                'dbname' => $dbSettings['dbname'],
-                'user' => $dbSettings['user'],
-                'password' => $dbSettings['password'],
-                'charset' => $dbSettings['charset'],
-            ], $config);
+            if ($dbSettings['driver'] === 'pdo_sqlite') {
+                $connectionParams = [
+                    'driver' => 'pdo_sqlite',
+                    'path' => $dbSettings['path'] ?? ':memory:',
+                ];
+            } else {
+                $connectionParams = [
+                    'driver' => $dbSettings['driver'],
+                    'host' => $dbSettings['host'],
+                    'port' => $dbSettings['port'],
+                    'dbname' => $dbSettings['dbname'],
+                    'user' => $dbSettings['user'],
+                    'password' => $dbSettings['password'],
+                    'charset' => $dbSettings['charset'],
+                ];
+            }
+
+            $connection = DriverManager::getConnection($connectionParams, $config);
 
             return new EntityManager($connection, $config);
         },

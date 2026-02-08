@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Tests;
 
 use DI\ContainerBuilder;
+use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\ORM\Tools\SchemaTool;
 use PHPUnit\Framework\TestCase as PHPUnitTestCase;
 use Psr\Http\Message\ResponseInterface;
 use Slim\App;
@@ -19,6 +21,15 @@ abstract class TestCase extends PHPUnitTestCase
     {
         parent::setUp();
         $this->app = $this->createApp();
+        $this->createSchema();
+    }
+
+    protected function createSchema(): void
+    {
+        $em = $this->app->getContainer()->get(EntityManagerInterface::class);
+        $schemaTool = new SchemaTool($em);
+        $metadata = $em->getMetadataFactory()->getAllMetadata();
+        $schemaTool->createSchema($metadata);
     }
 
     protected function createApp(): App

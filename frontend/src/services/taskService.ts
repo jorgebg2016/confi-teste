@@ -1,5 +1,5 @@
 import api from "./api";
-import { Task, CreateTaskPayload, UpdateTaskPayload } from "@/types/task";
+import { Task, TaskPayload } from "@/types/task";
 import { TaskListResponse, TaskResponse } from "@/types/api";
 
 export interface TaskFilters {
@@ -26,12 +26,12 @@ export const taskService = {
     return response.data.data!;
   },
 
-  async create(data: CreateTaskPayload): Promise<Task> {
+  async create(data: TaskPayload): Promise<Task> {
     const response = await api.post<TaskResponse>("/tasks", data);
     return response.data.data!;
   },
 
-  async update(id: number, data: UpdateTaskPayload): Promise<Task> {
+  async update(id: number, data: TaskPayload): Promise<Task> {
     const response = await api.put<TaskResponse>(`/tasks/${id}`, data);
     return response.data.data!;
   },
