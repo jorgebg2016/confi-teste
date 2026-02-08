@@ -20,6 +20,8 @@ RUN composer install --no-scripts --no-autoloader
 
 COPY . .
 
+RUN cp .env.example .env
+
 RUN composer dump-autoload --optimize
 
 RUN mkdir -p var/cache/doctrine/proxies var/logs \

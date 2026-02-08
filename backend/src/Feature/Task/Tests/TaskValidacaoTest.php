@@ -8,10 +8,6 @@ use Tests\TestCase;
 
 class TaskValidacaoTest extends TestCase
 {
-    // ==========================================
-    // Validação na criação de tarefa (POST)
-    // ==========================================
-
     public function testCriarTarefaSemTituloRetorna400(): void
     {
         $response = $this->post('/api/tasks', []);
@@ -74,10 +70,6 @@ class TaskValidacaoTest extends TestCase
         $this->assertEquals('O título deve ser do tipo texto', $json['errors']['title']);
     }
 
-    // ==========================================
-    // Validação da descrição na criação (POST)
-    // ==========================================
-
     public function testCriarTarefaComDescricaoLongaRetornaMensagemEmPortugues(): void
     {
         $response = $this->post('/api/tasks', [
@@ -135,10 +127,6 @@ class TaskValidacaoTest extends TestCase
         $this->assertTrue($json['success']);
     }
 
-    // ==========================================
-    // Validação na atualização de tarefa (PUT)
-    // ==========================================
-
     public function testAtualizarTarefaComTituloLongoRetornaMensagemEmPortugues(): void
     {
         $createResponse = $this->post('/api/tasks', ['title' => 'Tarefa Original']);
@@ -170,10 +158,6 @@ class TaskValidacaoTest extends TestCase
         $this->assertFalse($json['success']);
         $this->assertEquals('O título deve ser do tipo texto', $json['errors']['title']);
     }
-
-    // ==========================================
-    // Validação da descrição na atualização (PUT)
-    // ==========================================
 
     public function testAtualizarTarefaComDescricaoLongaRetornaMensagemEmPortugues(): void
     {
@@ -210,10 +194,6 @@ class TaskValidacaoTest extends TestCase
         $this->assertFalse($json['success']);
         $this->assertEquals('A descrição deve ser do tipo texto', $json['errors']['description']);
     }
-
-    // ==========================================
-    // Exceções de recurso não encontrado (404)
-    // ==========================================
 
     public function testExibirTarefaInexistenteRetornaMensagemEmPortugues(): void
     {
@@ -262,10 +242,6 @@ class TaskValidacaoTest extends TestCase
         $this->assertFalse($json['success']);
         $this->assertEquals('Tarefa não encontrada', $json['error']);
     }
-
-    // ==========================================
-    // Estrutura da resposta de erro
-    // ==========================================
 
     public function testRespostaDeValidacaoTemEstruturaCorreta(): void
     {
