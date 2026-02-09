@@ -32,7 +32,7 @@ class TaskController
 
         return $this->jsonResponse($response, [
             'success' => true,
-            'data' => $result['items'],
+            'data' => $result['item'],
             'pagination' => $result['pagination'],
         ]);
     }
